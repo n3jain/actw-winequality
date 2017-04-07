@@ -12,8 +12,18 @@ def read_from_file(filename):
     raw_data = raw_data[1:]
     return raw_data
 
-def wine_type_labels(raw_data, label):
-    # Split each line on ';', remove quality labels, add classfication labels for red/white
+def wine_quality_helper(raw_data):
+    # Split each line on ';'
+    wine_list = []
+
+    for line in raw_data:
+        arr = [float(i) for i in line.split(';')]
+        wine_list.append(arr)
+
+    return wine_list
+
+def wine_type_helper(raw_data, label):
+    # remove quality labels, add classfication labels for red/white
     wine_list = []
 
     for line in raw_data:
@@ -21,8 +31,22 @@ def wine_type_labels(raw_data, label):
         arr = arr[:-1] + [label]
         wine_list.append(arr)
 
-    print wine_list[0:3]
     return wine_list
+
+def prepare_wine_quality_data():
+    w_raw = read_from_file("./winequality-white.csv")
+    r_raw = read_from_file("./winequality-red.csv")
+
+    full_wines_list = wine_quality_helper(w_raw) + wine_quality_helper(r_raw)
+    full_wines_list = np.array(full_wines_list)
+    print full_wines_list.shape
+    # Data is features in the first 11 columns, Labels are the values in last column
+    data = full_wines_list[:, :-1]
+    labels = full_wines_list[:, 11]
+    print data
+    print labels
+
+    return train_test_split(data, labels, test_size=0.2, random_state=42)
 
 def prepare_wine_type_data():
     # Red wine label 1
@@ -30,7 +54,7 @@ def prepare_wine_type_data():
     w_raw = read_from_file("./winequality-white.csv")
     r_raw = read_from_file("./winequality-red.csv")
 
-    full_wines_list = wine_type_labels(w_raw, 0) + wine_type_labels(r_raw, 1)
+    full_wines_list = wine_type_helper(w_raw, 0) + wine_type_helper(r_raw, 1)
     full_wines_list = np.array(full_wines_list)
     print full_wines_list.shape
     # Data is features in the first 11 columns, Labels are the values in last column
